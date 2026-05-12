@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@source "../views/**/*.html";
+@source "../public/**/*.js";
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+@layer components {
+  .chip {
+    @apply bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 font-medium text-sm py-4 px-4 rounded-xl transition-all cursor-pointer text-center;
+  }
+  .chip.selected {
+    @apply bg-orange-500/10 border-orange-500 text-orange-400;
+  }
+
+  .chip-row {
+    @apply bg-slate-800 border border-slate-700 hover:border-slate-600 text-left p-4 rounded-xl transition-all cursor-pointer flex flex-col gap-1;
+  }
+  .chip-row.selected {
+    @apply bg-orange-500/10 border-orange-500;
+  }
+  .chip-row.selected .font-medium {
+    @apply text-orange-400;
+  }
+
+  .chip-large {
+    @apply bg-slate-800 border border-slate-700 hover:border-slate-600 py-6 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center;
+  }
+  .chip-large.selected {
+    @apply bg-orange-500/10 border-orange-500;
+  }
+  .chip-large.selected .text-lg {
+    @apply text-orange-400;
+  }
+
+  .chip-small {
+    @apply bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 text-sm py-3 px-4 rounded-xl transition-all cursor-pointer text-left;
+  }
+  .chip-small.selected {
+    @apply bg-orange-500/10 border-orange-500 text-orange-400;
+  }
+}

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Planner — Roteiros personalizados</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-slate-950 text-white min-h-screen">
+
+  <!-- Hero -->
+  <section class="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-orange-500 opacity-5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-orange-500 opacity-5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10 text-center max-w-3xl">
+      <span class="text-orange-500 text-xs font-semibold uppercase tracking-widest mb-6 block">Planejamento inteligente de viagem</span>
+      <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
+        Seu roteiro<br><span class="text-orange-500">personalizado</span>
+      </h1>
+      <p class="text-slate-400 text-lg md:text-xl mb-10 max-w-xl mx-auto leading-relaxed">
+        Responda algumas perguntas e receba um plano de viagem completo, com orçamento detalhado, sugestões de hospedagem e gastronomia.
+      </p>
+      <a href="#planner" class="inline-block bg-orange-500 hover:bg-orange-600 transition-colors text-white font-semibold px-8 py-4 rounded-2xl text-base">
+        Começar agora
+      </a>
+
+      <div class="flex items-center justify-center gap-8 mt-12 text-slate-500 text-sm">
+        <div><span class="text-white font-semibold">12.4k+</span> roteiros gerados</div>
+        <div class="w-px h-4 bg-slate-700"></div>
+        <div><span class="text-white font-semibold">4.9</span>/5 avaliação média</div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+      <div class="w-px h-8 bg-slate-700"></div>
+      <div class="w-1.5 h-1.5 bg-slate-600 rounded-full"></div>
+    </div>
+  </section>
+
+  <!-- Wizard -->
+  <section id="planner" class="py-24 px-4">
+    <div class="max-w-2xl mx-auto">
+
+      <!-- Progress -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between text-xs text-slate-500 mb-3">
+          <span id="step-label">Passo 1 de 5</span>
+          <span id="step-title">Sobre a viagem</span>
+        </div>
+        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div id="progress-bar" class="h-full bg-orange-500 transition-all duration-300" style="width: 20%"></div>
+        </div>
+      </div>
+
+      <form id="form" class="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+
+        <!-- STEP 1: Origin, destination, days, budget -->
+        <div class="step" data-step="1">
+          <h2 class="text-2xl font-bold mb-2">Sobre sua viagem</h2>
+          <p class="text-slate-400 text-sm mb-8">Comece com o básico</p>
+
+          <div class="flex flex-col gap-5">
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Ponto de partida</label>
+              <div class="relative">
+                <input type="text" id="origin" placeholder="Ex: São Paulo, SP" autocomplete="off"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3.5 text-white outline-none focus:border-orange-500 transition-colors pr-40">
+                <button type="button" id="geoBtn"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-700 hover:bg-slate-600 transition-colors text-slate-300 text-xs font-medium px-3 py-2 rounded-lg whitespace-nowrap">
+                  Usar localização
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Destino</label>
+              <div class="relative">
+                <input type="text" id="destination" placeholder="Ex: Lisboa, Portugal" autocomplete="off"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3.5 text-white outline-none focus:border-orange-500 transition-colors">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Data de início da viagem</label>
+              <input type="date" id="travelDate"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3.5 text-white outline-none focus:border-orange-500 transition-colors">
+              <p class="text-slate-600 text-xs mt-1.5">Usaremos para considerar clima e temporada</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">Dias</label>
+                <input type="number" id="days" min="1" max="30" placeholder="7"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3.5 text-white outline-none focus:border-orange-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">Pessoas</label>
+                <input type="number" id="travelers" min="1" max="20" placeholder="2" value="1"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3.5 text-white outline-none focus:border-orange-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">Orçamento (R$)</label>
+                <input type="number" id="budget" placeholder="5000"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3.5 text-white outline-none focus:border-orange-500 transition-colors">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Tipo de viagem -->
+        <div class="step hidden" data-step="2">
+          <h2 class="text-2xl font-bold mb-2">Qual o objetivo da viagem?</h2>
+          <p class="text-slate-400 text-sm mb-8">Isso influencia o roteiro gerado</p>
+
+          <div class="grid grid-cols-2 gap-3" id="trip-type-grid">
+            <button type="button" class="chip" data-value="Turismo">Turismo</button>
+            <button type="button" class="chip" data-value="Casal romântico">Casal romântico</button>
+            <button type="button" class="chip" data-value="Família">Família</button>
+            <button type="button" class="chip" data-value="Negócios">Negócios</button>
+            <button type="button" class="chip" data-value="Mochilão econômico">Mochilão econômico</button>
+            <button type="button" class="chip" data-value="Luxo">Luxo</button>
+            <button type="button" class="chip" data-value="Aventura">Aventura</button>
+            <button type="button" class="chip" data-value="Gastronomia">Gastronomia</button>
+            <button type="button" class="chip col-span-2" data-value="Vida noturna">Vida noturna</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Transporte -->
+        <div class="step hidden" data-step="3">
+          <h2 class="text-2xl font-bold mb-2">Como pretende se locomover?</h2>
+          <p class="text-slate-400 text-sm mb-8">Ajuda a planejar distâncias e custos</p>
+
+          <div class="grid grid-cols-1 gap-3" id="transport-grid">
+            <button type="button" class="chip-row" data-value="Carro alugado">
+              <span class="font-medium">Carro alugado</span>
+              <span class="text-xs text-slate-500">Mais liberdade e mobilidade</span>
+            </button>
+            <button type="button" class="chip-row" data-value="Uber / Táxi">
+              <span class="font-medium">Uber / Táxi</span>
+              <span class="text-xs text-slate-500">Praticidade sem dirigir</span>
+            </button>
+            <button type="button" class="chip-row" data-value="Transporte público">
+              <span class="font-medium">Transporte público</span>
+              <span class="text-xs text-slate-500">Mais econômico</span>
+            </button>
+            <button type="button" class="chip-row" data-value="A pé">
+              <span class="font-medium">A pé</span>
+              <span class="text-xs text-slate-500">Ótimo em cidades caminháveis</span>
+            </button>
+            <button type="button" class="chip-row" data-value="Ainda não sei">
+              <span class="font-medium">Ainda não sei</span>
+              <span class="text-xs text-slate-500">Sugerimos o melhor pra você</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 4: Hospedagem -->
+        <div class="step hidden" data-step="4">
+          <h2 class="text-2xl font-bold mb-2">Você já possui hospedagem?</h2>
+          <p class="text-slate-400 text-sm mb-8">Se não, vamos sugerir opções pra você</p>
+
+          <div class="grid grid-cols-2 gap-3 mb-6" id="lodging-grid">
+            <button type="button" class="chip-large" data-value="Sim">
+              <span class="text-lg font-semibold">Sim</span>
+              <span class="text-xs text-slate-500 mt-1">Já tenho onde ficar</span>
+            </button>
+            <button type="button" class="chip-large" data-value="Não">
+              <span class="text-lg font-semibold">Não</span>
+              <span class="text-xs text-slate-500 mt-1">Quero sugestões</span>
+            </button>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800">
+            <label class="block text-sm font-medium text-slate-400 mb-2">Bairro ou área onde vai ficar <span class="text-slate-600 text-xs">(opcional)</span></label>
+            <input type="text" id="lodgingArea" placeholder="Ex: Alfama, Shibuya, Copacabana"
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition-colors">
+            <p class="text-slate-600 text-xs mt-1.5">Usaremos para priorizar atividades próximas e minimizar deslocamento</p>
+          </div>
+
+          <div id="lodging-prefs" class="hidden flex-col gap-3 pt-4 border-t border-slate-800 mt-4">
+            <p class="text-sm font-medium text-slate-400 mb-1">O que importa mais pra você?</p>
+            <button type="button" class="chip-small" data-pref="melhor custo-benefício">Melhor custo-benefício</button>
+            <button type="button" class="chip-small" data-pref="melhor localização">Melhor localização</button>
+            <button type="button" class="chip-small" data-pref="próximo dos pontos turísticos">Próximo dos pontos turísticos</button>
+            <button type="button" class="chip-small" data-pref="dentro do orçamento">Dentro do orçamento</button>
+          </div>
+        </div>
+
+        <!-- STEP 5: Preferências pessoais -->
+        <div class="step hidden" data-step="5">
+          <h2 class="text-2xl font-bold mb-2">Suas preferências</h2>
+          <p class="text-slate-400 text-sm mb-8">Selecione tudo que combina com você</p>
+
+          <div class="flex flex-col gap-3" id="prefs-grid">
+            <button type="button" class="chip-small" data-pref="vida noturna">Curto vida noturna</button>
+            <button type="button" class="chip-small" data-pref="natureza">Prefiro natureza a cidade grande</button>
+            <button type="button" class="chip-small" data-pref="instagramável">Quero lugares instagramáveis</button>
+            <button type="button" class="chip-small" data-pref="gastronomia local">Adoro gastronomia local</button>
+            <button type="button" class="chip-small" data-pref="economia">Quero economizar</button>
+            <button type="button" class="chip-small" data-pref="conforto">Prefiro conforto a economia</button>
+            <button type="button" class="chip-small" data-pref="sozinho">Vou viajar sozinho</button>
+            <button type="button" class="chip-small" data-pref="acompanhado">Vou acompanhado</button>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-800">
+          <button type="button" id="prevBtn"
+            class="text-slate-400 hover:text-white transition-colors text-sm font-medium px-4 py-2 disabled:opacity-30 disabled:cursor-not-allowed">
+            ← Voltar
+          </button>
+          <button type="button" id="nextBtn"
+            class="bg-orange-500 hover:bg-orange-600 transition-colors text-white font-semibold px-8 py-3 rounded-xl">
+            Continuar
+          </button>
+          <button type="button" id="submitBtn"
+            class="hidden bg-orange-500 hover:bg-orange-600 transition-colors text-white font-semibold px-8 py-3 rounded-xl">
+            Gerar roteiro
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section id="result" class="hidden pb-28 px-4">
+    <div class="max-w-5xl mx-auto">
+      <div id="result-header" class="text-center mb-12"></div>
+      <div id="result-budget" class="mb-10"></div>
+      <div id="result-lodging" class="mb-10"></div>
+      <div id="result-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"></div>
+      <div id="result-restaurants" class="mb-10"></div>
+      <div id="result-summary"></div>
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  <section class="py-20 px-4 border-t border-slate-800">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12">
+        <span class="text-orange-500 text-xs font-semibold uppercase tracking-widest">Quem usa, recomenda</span>
+        <h2 class="text-3xl font-bold mt-2">Mais de 12 mil viagens planejadas</h2>
+      </div>
+
+      <div id="reviews-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"></div>
+
+      <!-- Review form -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-2xl mx-auto">
+        <h3 class="text-xl font-bold mb-1">Deixe sua avaliação</h3>
+        <p class="text-slate-400 text-sm mb-6">Sua experiência ajuda outros viajantes</p>
+
+        <form id="review-form" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Seu nome</label>
+            <input type="text" id="review-name" placeholder="Como devemos te chamar?" maxlength="50"
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition-colors">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Sua nota</label>
+            <div id="rating-stars" class="flex gap-2 text-3xl text-slate-700 select-none">
+              <span class="cursor-pointer transition-colors hover:text-orange-500" data-rating="1">★</span>
+              <span class="cursor-pointer transition-colors hover:text-orange-500" data-rating="2">★</span>
+              <span class="cursor-pointer transition-colors hover:text-orange-500" data-rating="3">★</span>
+              <span class="cursor-pointer transition-colors hover:text-orange-500" data-rating="4">★</span>
+              <span class="cursor-pointer transition-colors hover:text-orange-500" data-rating="5">★</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Comentário</label>
+            <textarea id="review-comment" placeholder="Conte como foi sua experiência" rows="3" maxlength="280"
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition-colors resize-none"></textarea>
+            <p class="text-xs text-slate-600 mt-1"><span id="review-char-count">0</span>/280 caracteres</p>
+          </div>
+
+          <button type="submit"
+            class="bg-orange-500 hover:bg-orange-600 transition-colors text-white font-semibold py-3 rounded-xl mt-2">
+            Enviar avaliação
+          </button>
+
+          <p id="review-feedback" class="text-sm text-center hidden"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-10 px-4 border-t border-slate-800 text-center text-slate-600 text-sm">
+    Travel Planner &middot; Projeto de portfólio
+  </footer>
+
+  <!-- Chat widget -->
+  <button id="chat-toggle" type="button"
+    class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-orange-500 hover:bg-orange-600 transition-all text-white rounded-full shadow-2xl flex items-center justify-center group">
+    <svg id="chat-icon-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <svg id="chat-icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+    <span class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-950"></span>
+  </button>
+
+  <div id="chat-panel" class="hidden fixed bottom-24 right-6 z-50 w-[min(420px,calc(100vw-3rem))] h-[min(620px,calc(100vh-8rem))] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex-col overflow-hidden">
+    <div class="border-b border-slate-800 p-4 flex items-center justify-between bg-slate-900">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+          <h3 class="font-semibold">Assistente de viagem</h3>
+        </div>
+        <p class="text-xs text-slate-500 mt-0.5">Tire dúvidas sobre seu roteiro</p>
+      </div>
+    </div>
+
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+      <div class="flex justify-start">
+        <div class="bg-slate-800 text-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] text-sm leading-relaxed">
+          Olá! Sou seu assistente de viagem. Posso responder dúvidas sobre destinos, dar dicas práticas, sugerir o que levar, ou ajudar a ajustar seu roteiro. O que você quer saber?
+        </div>
+      </div>
+    </div>
+
+    <form id="chat-form" class="border-t border-slate-800 p-3 bg-slate-900">
+      <div class="flex gap-2">
+        <input id="chat-input" type="text" placeholder="Pergunte qualquer coisa..." autocomplete="off"
+          class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500 transition-colors">
+        <button type="submit" id="chat-send"
+          class="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors text-white px-4 rounded-xl flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
