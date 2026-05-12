@@ -7,7 +7,9 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Gemini](https://img.shields.io/badge/Gemini_AI-8E75B2?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
 
-🌐 **Demo ao vivo:** [em breve — deploy no Render]
+🌐 **Demo ao vivo:** **[travel-planner-ggf3.onrender.com](https://travel-planner-ggf3.onrender.com)**
+
+> ⏱️ Primeira request pode demorar ~30s (servidor em modo free hiberna após 15min sem uso).
 
 ---
 
