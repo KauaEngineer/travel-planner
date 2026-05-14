@@ -278,20 +278,26 @@ function extractCorePlaceName(title) {
 
 async function searchWikipediaImage(lang, query) {
   try {
-    const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&format=json`
+    const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=5&format=json`
     const searchRes = await fetch(searchUrl, { headers: { 'User-Agent': 'TravelPlanner/1.0' } })
     const searchData = await searchRes.json()
-    const title = searchData[1]?.[0]
-    if (!title) return null
+    const titles = searchData[1] || []
+    if (!titles.length) return null
 
-    const summaryUrl = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
-    const summaryRes = await fetch(summaryUrl, { headers: { 'User-Agent': 'TravelPlanner/1.0' } })
-    if (!summaryRes.ok) return null
-    const summary = await summaryRes.json()
+    for (const title of titles) {
+      try {
+        const summaryUrl = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
+        const summaryRes = await fetch(summaryUrl, { headers: { 'User-Agent': 'TravelPlanner/1.0' } })
+        if (!summaryRes.ok) continue
+        const summary = await summaryRes.json()
 
-    const thumb = summary.thumbnail?.source
-    if (!thumb) return null
-    return thumb.replace(/\/\d+px-/, '/800px-')
+        if (summary.type === 'disambiguation') continue
+        const thumb = summary.thumbnail?.source
+        if (!thumb) continue
+        return thumb.replace(/\/\d+px-/, '/800px-')
+      } catch { continue }
+    }
+    return null
   } catch {
     return null
   }
@@ -313,60 +319,35 @@ async function findWikipediaImage(rawTitle, city) {
   return null
 }
 
-// Imagens curadas por categoria (Unsplash, URLs estáveis)
-const CATEGORY_IMAGES = {
-  gastronomia: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80&auto=format&fit=crop',
-  restaurante: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&auto=format&fit=crop',
-  comida: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80&auto=format&fit=crop',
-  cafeteria: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80&auto=format&fit=crop',
-  bar: 'https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=800&q=80&auto=format&fit=crop',
-  noturna: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80&auto=format&fit=crop',
-  historico: 'https://images.unsplash.com/photo-1564660335-2e7a3aa2f1bf?w=800&q=80&auto=format&fit=crop',
-  museu: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=800&q=80&auto=format&fit=crop',
-  cultural: 'https://images.unsplash.com/photo-1565060169187-5284c6332b71?w=800&q=80&auto=format&fit=crop',
-  cultura: 'https://images.unsplash.com/photo-1565060169187-5284c6332b71?w=800&q=80&auto=format&fit=crop',
-  natureza: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop',
-  parque: 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=800&q=80&auto=format&fit=crop',
-  trilha: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80&auto=format&fit=crop',
-  praia: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format&fit=crop',
-  compras: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?w=800&q=80&auto=format&fit=crop',
-  mercado: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80&auto=format&fit=crop',
-  vista: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80&auto=format&fit=crop',
-  panoramica: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80&auto=format&fit=crop',
-  mirante: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80&auto=format&fit=crop',
-  igreja: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80&auto=format&fit=crop',
-  templo: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=800&q=80&auto=format&fit=crop',
-  hotel: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80&auto=format&fit=crop',
-  hospedagem: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&auto=format&fit=crop',
-  airbnb: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80&auto=format&fit=crop',
-  aventura: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80&auto=format&fit=crop',
-  spa: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80&auto=format&fit=crop',
-  default: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80&auto=format&fit=crop'
-}
+// Fallback final neutro e seguro (foto de mapa-mundi, Unsplash verificado)
+const GENERIC_TRAVEL_IMAGE = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80&auto=format&fit=crop'
 
-function getCategoryImage(text) {
-  if (!text) return CATEGORY_IMAGES.default
-  const normalized = text.toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-  for (const [key, url] of Object.entries(CATEGORY_IMAGES)) {
-    if (normalized.includes(key)) return url
-  }
-  return CATEGORY_IMAGES.default
-}
-
-async function findBestImage({ placeName, location, city, category }) {
+async function findBestImage({ placeName, location, city, country }) {
+  // 1. Wikipedia do lugar específico
   const placeImg = await findWikipediaImage(placeName, city)
   if (placeImg) return { url: placeImg, isReal: true }
 
+  // 2. Wikipedia do bairro/região
   if (location) {
     const locImg = await searchWikipediaImage('pt', location) || await searchWikipediaImage('en', location)
     if (locImg) return { url: locImg, isReal: false }
   }
 
-  const cityImg = await searchWikipediaImage('pt', city) || await searchWikipediaImage('en', city)
-  if (cityImg) return { url: cityImg, isReal: false }
+  // 3. Wikipedia da cidade (com cidade + país para evitar disambiguação)
+  const cityQueries = country ? [`${city} ${country}`, city] : [city]
+  for (const q of cityQueries) {
+    const img = await searchWikipediaImage('pt', q) || await searchWikipediaImage('en', q)
+    if (img) return { url: img, isReal: false }
+  }
 
-  return { url: getCategoryImage(category || placeName), isReal: false }
+  // 4. Wikipedia do país
+  if (country) {
+    const countryImg = await searchWikipediaImage('pt', country) || await searchWikipediaImage('en', country)
+    if (countryImg) return { url: countryImg, isReal: false }
+  }
+
+  // 5. Último recurso: imagem genérica de viagem
+  return { url: GENERIC_TRAVEL_IMAGE, isReal: false }
 }
 
 async function findRealPlace(city, searchTerm) {
@@ -580,7 +561,9 @@ app.post('/api/planner', async (req, res) => {
     preferences = [], travelDate, lodgingArea
   } = req.body
 
-  const city = destination.split(',')[0].trim()
+  const destParts = destination.split(',').map(s => s.trim())
+  const city = destParts[0]
+  const country = destParts[destParts.length - 1] !== city ? destParts[destParts.length - 1] : null
   const style = getStyle(tripType, preferences)
   const imgKey = (text) => encodeURIComponent(String(text).toLowerCase().replace(/[^a-z0-9 ]/g, '').trim() || 'city')
 
@@ -597,11 +580,11 @@ app.post('/api/planner', async (req, res) => {
       itinerary = await Promise.all(aiData.itinerary.map(async (day) => {
         const mainActivity = day.activities?.[0]
         const coverImg = mainActivity
-          ? await findBestImage({ placeName: mainActivity.title, location: mainActivity.location, city, category: mainActivity.category })
+          ? await findBestImage({ placeName: mainActivity.title, location: mainActivity.location, city, country, category: mainActivity.category })
           : { url: getCategoryImage('default'), isReal: false }
 
         const activitiesEnriched = await Promise.all((day.activities || []).map(async (act) => {
-          const actImg = await findBestImage({ placeName: act.title, location: act.location, city, category: act.category })
+          const actImg = await findBestImage({ placeName: act.title, location: act.location, city, country, category: act.category })
           return {
             time: act.time,
             period: act.period,
@@ -633,7 +616,7 @@ app.post('/api/planner', async (req, res) => {
       }))
 
       aiLodging = await Promise.all(aiData.lodging.map(async (l) => {
-        const img = await findBestImage({ placeName: l.name, location: l.neighborhood, city, category: l.type + ' hotel' })
+        const img = await findBestImage({ placeName: l.name, location: l.neighborhood, city, country, category: l.type + ' hotel' })
         return {
           name: l.name,
           type: l.type,
@@ -649,7 +632,7 @@ app.post('/api/planner', async (req, res) => {
       }))
 
       aiRestaurants = await Promise.all(aiData.restaurants.map(async (r) => {
-        const img = await findBestImage({ placeName: r.name, location: r.neighborhood, city, category: r.cuisine + ' restaurante' })
+        const img = await findBestImage({ placeName: r.name, location: r.neighborhood, city, country, category: r.cuisine + ' restaurante' })
         return {
           name: r.name,
           cuisine: r.cuisine,
@@ -673,7 +656,7 @@ app.post('/api/planner', async (req, res) => {
       activities.map(async (act, i) => {
         const real = await findRealPlace(city, act.search)
         const title = real?.name || act.title
-        const img = await findBestImage({ placeName: title, location: real?.address, city, category: act.title })
+        const img = await findBestImage({ placeName: title, location: real?.address, city, country, category: act.title })
         const activity = {
           time: '10:00',
           period: 'manhã',
