@@ -631,60 +631,73 @@ function renderResult(data, origin) {
     </div>
   `
 
-  // Affiliate partners — mocks realistas
-  const originCity = origin ? origin.split(',')[0] : 'sua cidade'
+  // Affiliate partners — links reais
+  const originCity = origin ? origin.split(',')[0] : ''
   const destCity = destination.split(',')[0]
+  const flightsUrl = `https://www.google.com/travel/flights?q=${encodeURIComponent('Voos' + (originCity ? ' de ' + originCity : '') + ' para ' + destination)}`
+  const hotelsUrl = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(destination)}`
+  const carUrl = `https://www.google.com/search?q=${encodeURIComponent('aluguel de carro em ' + destCity)}`
+  const insuranceUrl = `https://www.seguropromo.com.br/seguro-viagem?utm_source=travelplanner`
+
   document.getElementById('result-summary').innerHTML = `
     <div>
       <div class="mb-6">
         <span class="text-orange-500 text-xs font-semibold uppercase tracking-widest">Reserve sua viagem</span>
         <h3 class="text-2xl font-bold mt-1">Complete o planejamento</h3>
-        <p class="text-slate-500 text-sm mt-1">Comparações ao vivo de nossos parceiros</p>
+        <p class="text-slate-500 text-sm mt-1">Compare preços ao vivo em nossos parceiros</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a href="#" class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center">
-          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-2xl shrink-0">✈</div>
+        <a href="${flightsUrl}" target="_blank" rel="noopener noreferrer"
+          class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center group">
+          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
+          </div>
           <div class="flex-1 min-w-0">
             <p class="text-xs text-slate-500 mb-0.5">PASSAGEM AÉREA</p>
-            <p class="font-semibold truncate">${originCity} → ${destCity}</p>
+            <p class="font-semibold truncate group-hover:text-orange-400 transition-colors">${originCity ? originCity + ' → ' + destCity : 'Voos para ' + destCity}</p>
             <p class="text-sm text-orange-400 mt-1">A partir de R$ ${Math.round((1000 + days * 200) * travelers).toLocaleString('pt-BR')}</p>
-            <p class="text-xs text-slate-600 mt-0.5">LATAM, GOL, Azul · ida e volta para ${travelers}</p>
+            <p class="text-xs text-slate-600 mt-0.5">Comparar no Google Flights →</p>
           </div>
-          <span class="text-slate-600 shrink-0">→</span>
         </a>
 
-        <a href="#" class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center">
-          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-2xl shrink-0">⌂</div>
+        <a href="${hotelsUrl}" target="_blank" rel="noopener noreferrer"
+          class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center group">
+          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </div>
           <div class="flex-1 min-w-0">
             <p class="text-xs text-slate-500 mb-0.5">HOSPEDAGEM</p>
-            <p class="font-semibold truncate">Hotéis e Airbnb em ${destCity}</p>
+            <p class="font-semibold truncate group-hover:text-orange-400 transition-colors">Hotéis e Airbnb em ${destCity}</p>
             <p class="text-sm text-orange-400 mt-1">${(lodging && lodging.length) ? lodging[0].price : 'A partir de R$ 220/noite'}</p>
-            <p class="text-xs text-slate-600 mt-0.5">Booking.com, Airbnb, Hoteis.com</p>
+            <p class="text-xs text-slate-600 mt-0.5">Buscar no Booking.com →</p>
           </div>
-          <span class="text-slate-600 shrink-0">→</span>
         </a>
 
-        <a href="#" class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center">
-          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-2xl shrink-0">⌬</div>
+        <a href="${carUrl}" target="_blank" rel="noopener noreferrer"
+          class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center group">
+          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"></path><circle cx="6.5" cy="16.5" r="2.5"></circle><circle cx="16.5" cy="16.5" r="2.5"></circle></svg>
+          </div>
           <div class="flex-1 min-w-0">
             <p class="text-xs text-slate-500 mb-0.5">ALUGUEL DE CARRO</p>
-            <p class="font-semibold truncate">VW T-Cross ou similar</p>
+            <p class="font-semibold truncate group-hover:text-orange-400 transition-colors">Carros em ${destCity}</p>
             <p class="text-sm text-orange-400 mt-1">R$ 180/dia (${days} dias = R$ ${(180 * days).toLocaleString('pt-BR')})</p>
-            <p class="text-xs text-slate-600 mt-0.5">Localiza, Movida, Unidas</p>
+            <p class="text-xs text-slate-600 mt-0.5">Localiza, Movida, RentCars →</p>
           </div>
-          <span class="text-slate-600 shrink-0">→</span>
         </a>
 
-        <a href="#" class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center">
-          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-2xl shrink-0">⛨</div>
+        <a href="${insuranceUrl}" target="_blank" rel="noopener noreferrer"
+          class="bg-slate-900 hover:border-orange-500/50 border border-slate-800 rounded-2xl p-5 transition-colors flex gap-4 items-center group">
+          <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
           <div class="flex-1 min-w-0">
             <p class="text-xs text-slate-500 mb-0.5">SEGURO VIAGEM</p>
-            <p class="font-semibold truncate">Cobertura completa ${destCity}</p>
+            <p class="font-semibold truncate group-hover:text-orange-400 transition-colors">Cobertura ${destCity}</p>
             <p class="text-sm text-orange-400 mt-1">R$ ${Math.round(15 * days * travelers).toLocaleString('pt-BR')} (${days} dias)</p>
-            <p class="text-xs text-slate-600 mt-0.5">World Nomads, Assist Card, SegurosPromo</p>
+            <p class="text-xs text-slate-600 mt-0.5">Cotar no SegurosPromo →</p>
           </div>
-          <span class="text-slate-600 shrink-0">→</span>
         </a>
       </div>
     </div>
