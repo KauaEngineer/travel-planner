@@ -59,11 +59,12 @@ const ROTEIRO_SCHEMA = {
           name: { type: 'string', description: 'Nome real ou plausível do hotel/Airbnb/pousada' },
           type: { type: 'string', description: 'Tipo (ex: "Hotel boutique 4 estrelas")' },
           neighborhood: { type: 'string', description: 'Bairro' },
+          address: { type: 'string', description: 'Endereço aproximado ou ponto de referência (ex: "Av. Vieira Souto, próximo à Praia de Ipanema")' },
           price_per_night: { type: 'integer', description: 'Preço por noite em BRL' },
           rating: { type: 'number', description: 'Nota de 4.0 a 5.0' },
-          tag: { type: 'string', description: 'Diferencial principal (ex: "melhor localização", "custo-benefício")' }
+          tag: { type: 'string', description: 'Diferencial principal' }
         },
-        required: ['name', 'type', 'neighborhood', 'price_per_night', 'rating', 'tag']
+        required: ['name', 'type', 'neighborhood', 'address', 'price_per_night', 'rating', 'tag']
       }
     },
     restaurants: {
@@ -75,10 +76,11 @@ const ROTEIRO_SCHEMA = {
           name: { type: 'string', description: 'Nome REAL de restaurante existente na cidade' },
           cuisine: { type: 'string', description: 'Tipo de culinária' },
           neighborhood: { type: 'string', description: 'Bairro' },
+          address: { type: 'string', description: 'Endereço aproximado ou ponto de referência' },
           price_range: { type: 'string', enum: ['$', '$$', '$$$', '$$$$'] },
           tag: { type: 'string', description: 'Categoria especial' }
         },
-        required: ['name', 'cuisine', 'neighborhood', 'price_range', 'tag']
+        required: ['name', 'cuisine', 'neighborhood', 'address', 'price_range', 'tag']
       }
     }
   },
@@ -612,7 +614,8 @@ app.post('/api/planner', async (req, res) => {
             category: act.category,
             tips: act.tips,
             imageUrl: actImg.url,
-            imageIsReal: actImg.isReal
+            imageIsReal: actImg.isReal,
+            mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.title + ' ' + city)}`
           }
         }))
 
@@ -635,11 +638,13 @@ app.post('/api/planner', async (req, res) => {
           name: l.name,
           type: l.type,
           neighborhood: l.neighborhood,
+          address: l.address,
           price: `R$ ${l.price_per_night.toLocaleString('pt-BR')}/noite`,
           rating: l.rating,
           tag: l.tag,
           imageUrl: img.url,
-          imageIsReal: img.isReal
+          imageIsReal: img.isReal,
+          bookingUrl: `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(l.name + ' ' + city)}`
         }
       }))
 
@@ -649,10 +654,12 @@ app.post('/api/planner', async (req, res) => {
           name: r.name,
           cuisine: r.cuisine,
           neighborhood: r.neighborhood,
+          address: r.address,
           price: r.price_range,
           tag: r.tag,
           imageUrl: img.url,
-          imageIsReal: img.isReal
+          imageIsReal: img.isReal,
+          mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ' ' + city)}`
         }
       }))
     } catch (err) {

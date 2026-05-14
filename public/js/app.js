@@ -475,7 +475,8 @@ function renderResult(data, origin) {
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
           ${lodging.map(l => `
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-colors">
+            <a href="${l.bookingUrl || '#'}" target="_blank" rel="noopener noreferrer"
+              class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-colors block group">
               <div class="relative h-40" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
                 <img src="${l.imageUrl}" alt="${l.name}" class="w-full h-full object-cover" loading="lazy"
                   onerror="this.onerror=null;this.src='https://picsum.photos/seed/lodging${Math.random()}/600/400'">
@@ -486,15 +487,19 @@ function renderResult(data, origin) {
                   <span class="text-xs text-orange-400 font-semibold">${l.tag.toUpperCase()}</span>
                   <span class="text-xs text-slate-500">★ ${l.rating}</span>
                 </div>
-                <h4 class="font-semibold mb-1 leading-snug">${l.name}</h4>
+                <h4 class="font-semibold mb-1 leading-snug group-hover:text-orange-400 transition-colors">${l.name}</h4>
                 <p class="text-slate-500 text-xs mb-1">${l.type}</p>
-                ${l.neighborhood ? `<p class="text-slate-600 text-xs mb-3">${l.neighborhood}</p>` : '<div class="mb-3"></div>'}
+                ${l.neighborhood ? `<p class="text-slate-400 text-xs mb-1">${l.neighborhood}</p>` : ''}
+                ${l.address ? `<p class="text-slate-600 text-xs mb-3 flex items-start gap-1.5">
+                  <span class="text-orange-500/70 mt-0.5">◉</span>
+                  <span>${l.address}</span>
+                </p>` : '<div class="mb-3"></div>'}
                 <div class="flex items-center justify-between pt-3 border-t border-slate-800">
                   <span class="text-orange-400 font-semibold">${l.price}</span>
-                  <span class="text-slate-500 text-xs">Ver opções →</span>
+                  <span class="text-slate-500 text-xs">Ver no Booking →</span>
                 </div>
               </div>
-            </div>
+            </a>
           `).join('')}
         </div>
       </div>
@@ -560,7 +565,16 @@ function renderResult(data, origin) {
                 <div class="flex items-start justify-between gap-3 mb-1">
                   <div>
                     <span class="text-slate-500 text-xs uppercase tracking-wider">${act.period}${act.duration ? ` &middot; ${act.duration}` : ''}</span>
-                    <h5 class="font-semibold mt-0.5">${act.title}</h5>
+                    <h5 class="font-semibold mt-0.5">
+                      ${act.mapsUrl
+                        ? `<a href="${act.mapsUrl}" target="_blank" rel="noopener noreferrer" class="hover:text-orange-400 transition-colors inline-flex items-center gap-1.5">
+                            ${act.title}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
+                              <path d="M7 17L17 7"></path><path d="M7 7h10v10"></path>
+                            </svg>
+                          </a>`
+                        : act.title}
+                    </h5>
                   </div>
                   <span class="text-slate-400 text-sm shrink-0">R$ ${act.cost.toLocaleString('pt-BR')}</span>
                 </div>
@@ -593,7 +607,8 @@ function renderResult(data, origin) {
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
         ${restaurants.map(r => `
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-colors">
+          <a href="${r.mapsUrl || '#'}" target="_blank" rel="noopener noreferrer"
+            class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-colors block group">
             <div class="relative h-40" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
               <img src="${r.imageUrl}" alt="${r.name}" class="w-full h-full object-cover" loading="lazy"
                 onerror="this.onerror=null;this.src='https://picsum.photos/seed/food${Math.random()}/600/400'">
@@ -601,11 +616,16 @@ function renderResult(data, origin) {
             </div>
             <div class="p-5">
               <span class="text-xs text-orange-400 font-semibold">${r.tag.toUpperCase()}</span>
-              <h4 class="font-semibold mt-1 mb-1 leading-snug">${r.name}</h4>
+              <h4 class="font-semibold mt-1 mb-1 leading-snug group-hover:text-orange-400 transition-colors">${r.name}</h4>
               <p class="text-slate-500 text-xs">${r.cuisine} &middot; <span class="text-slate-400">${r.price}</span></p>
-              ${r.neighborhood ? `<p class="text-slate-600 text-xs mt-1">${r.neighborhood}</p>` : ''}
+              ${r.neighborhood ? `<p class="text-slate-400 text-xs mt-1">${r.neighborhood}</p>` : ''}
+              ${r.address ? `<p class="text-slate-600 text-xs mt-1 flex items-start gap-1.5">
+                <span class="text-orange-500/70 mt-0.5">◉</span>
+                <span>${r.address}</span>
+              </p>` : ''}
+              <p class="text-slate-500 text-xs mt-3 pt-3 border-t border-slate-800">Ver no Google Maps →</p>
             </div>
-          </div>
+          </a>
         `).join('')}
       </div>
     </div>
