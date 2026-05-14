@@ -316,13 +316,60 @@ submitBtn.addEventListener('click', async () => {
   }
 })
 
+const LOADING_MESSAGES = [
+  'Consultando os melhores lugares do destino',
+  'Buscando atrações reais e seus horários',
+  'Selecionando restaurantes autênticos',
+  'Calculando rotas e tempos de deslocamento',
+  'Verificando hospedagens disponíveis',
+  'Estimando custos realistas',
+  'Adicionando dicas práticas para cada local',
+  'Buscando fotos reais dos lugares',
+  'Organizando o cronograma do dia',
+  'Quase pronto! Finalizando seu roteiro'
+]
+
+let loadingIntervalId = null
+
 function showLoadingResult() {
+  stopLoading()
+  let idx = 0
+
   document.getElementById('result-header').innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:60px 0">
-      <div style="width:24px;height:24px;border:2px solid #f97316;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div>
-      <p class="text-slate-400">Montando seu roteiro personalizado...</p>
+    <div style="padding:80px 24px 60px;text-align:center;max-width:480px;margin:0 auto">
+      <div style="position:relative;width:88px;height:88px;margin:0 auto 32px">
+        <div style="position:absolute;inset:0;border:3px solid #1e293b;border-radius:50%"></div>
+        <div style="position:absolute;inset:0;border:3px solid transparent;border-top-color:#f97316;border-right-color:#f97316;border-radius:50%;animation:spin 1.2s linear infinite"></div>
+        <div style="position:absolute;inset:14px;border:3px solid transparent;border-top-color:#fb923c;border-radius:50%;animation:spin 1.8s linear infinite reverse;opacity:0.6"></div>
+        <div style="position:absolute;inset:28px;background:#f97316;border-radius:50%;opacity:0.2"></div>
+      </div>
+
+      <p id="loading-message" key="0" style="color:#f1f5f9;font-size:16px;font-weight:500;min-height:24px;animation:fade-in 0.4s ease-out">
+        ${LOADING_MESSAGES[0]}
+      </p>
+
+      <div style="margin-top:14px;display:flex;justify-content:center;gap:6px">
+        <span style="width:7px;height:7px;background:#f97316;border-radius:50%;animation:pulse-dot 1.4s infinite ease-in-out"></span>
+        <span style="width:7px;height:7px;background:#f97316;border-radius:50%;animation:pulse-dot 1.4s infinite ease-in-out 0.2s"></span>
+        <span style="width:7px;height:7px;background:#f97316;border-radius:50%;animation:pulse-dot 1.4s infinite ease-in-out 0.4s"></span>
+      </div>
+
+      <p style="color:#64748b;font-size:12px;margin-top:24px">
+        A IA está montando seu roteiro. Isso pode levar até 30 segundos.
+      </p>
     </div>
   `
+
+  loadingIntervalId = setInterval(() => {
+    idx = (idx + 1) % LOADING_MESSAGES.length
+    const el = document.getElementById('loading-message')
+    if (!el) return
+    el.style.animation = 'none'
+    void el.offsetWidth
+    el.textContent = LOADING_MESSAGES[idx]
+    el.style.animation = 'fade-in 0.4s ease-out'
+  }, 2500)
+
   document.getElementById('result-budget').innerHTML = ''
   document.getElementById('result-lodging').innerHTML = ''
   document.getElementById('result-grid').innerHTML = ''
@@ -330,7 +377,15 @@ function showLoadingResult() {
   document.getElementById('result-summary').innerHTML = ''
 }
 
+function stopLoading() {
+  if (loadingIntervalId) {
+    clearInterval(loadingIntervalId)
+    loadingIntervalId = null
+  }
+}
+
 function showError(msg) {
+  stopLoading()
   document.getElementById('result-header').innerHTML = `<p class="text-red-400 text-center py-10">Erro: ${msg}</p>`
 }
 
@@ -338,6 +393,7 @@ function showError(msg) {
 // Render result
 // ============================================================
 function renderResult(data, origin) {
+  stopLoading()
   state.lastRoteiro = { ...data, origin }
   const { destination, days, travelers, budget, tripType, transport, style, itinerary, budgetBreakdown, totalCost, lodging, restaurants } = data
   const styleLabel = { eco: 'Econômico', mid: 'Conforto médio', luxury: 'Luxo' }[style]
@@ -478,22 +534,22 @@ function renderResult(data, origin) {
         </div>
 
         <!-- Day header -->
-        <div class="px-6 pt-6 pb-5 border-b border-slate-800">
+        <div class="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 border-b border-slate-800">
           <div class="flex items-start justify-between gap-4 flex-wrap">
             <div class="flex-1 min-w-0">
-              <h4 class="text-2xl font-bold leading-tight">${day.theme || 'Dia ' + day.day}</h4>
+              <h4 class="text-xl sm:text-2xl font-bold leading-tight">${day.theme || 'Dia ' + day.day}</h4>
               <p class="text-slate-500 text-sm mt-2">${(day.activities || []).length} ${(day.activities || []).length === 1 ? 'atividade' : 'atividades'} programadas</p>
             </div>
             <div class="text-right shrink-0">
-              <p class="text-slate-500 text-xs uppercase tracking-wider">Estimativa do dia</p>
-              <p class="text-orange-400 font-bold text-xl mt-1">R$ ${day.dailyCost.toLocaleString('pt-BR')}</p>
+              <p class="text-slate-500 text-xs uppercase tracking-wider">Estimativa</p>
+              <p class="text-orange-400 font-bold text-lg sm:text-xl mt-1">R$ ${day.dailyCost.toLocaleString('pt-BR')}</p>
               ${travelers > 1 ? `<p class="text-slate-600 text-xs">R$ ${day.dailyCostPerPerson.toLocaleString('pt-BR')}/pessoa</p>` : ''}
             </div>
           </div>
         </div>
 
         <!-- Timeline -->
-        <div class="p-6 flex flex-col gap-5">
+        <div class="p-5 sm:p-6 flex flex-col gap-5">
           ${(day.activities || []).map((act, ai) => `
             <div class="flex gap-4">
               <div class="flex flex-col items-center shrink-0">
