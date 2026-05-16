@@ -479,8 +479,8 @@ function renderResult(data, origin) {
               class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-colors block group">
               <div class="relative h-40" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
                 <img src="${l.imageUrl}" alt="${l.name}" class="w-full h-full object-cover" loading="lazy"
-                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/lodging${Math.random()}/600/400'">
-                ${l.imageIsReal === false ? `<div class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
+                  onerror="this.onerror=null;this.src='/img/placeholder.svg'">
+                ${l.imageIsReal === false && !l.imageUrl?.endsWith('/placeholder.svg') ? `<div class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
               </div>
               <div class="p-5">
                 <div class="flex items-center justify-between mb-1">
@@ -531,11 +531,11 @@ function renderResult(data, origin) {
         <!-- Cover image -->
         <div class="relative h-56" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
           <img src="${day.imageUrl}" alt="${day.theme || 'Dia ' + day.day}" class="w-full h-full object-cover" loading="lazy"
-            onerror="this.onerror=null;this.src='https://picsum.photos/seed/day${day.day}/1200/450'">
+            onerror="this.onerror=null;this.src='/img/placeholder.svg'">
           <div class="absolute top-4 left-4 bg-slate-950/80 backdrop-blur text-orange-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">
             Dia ${day.day}
           </div>
-          ${day.imageIsReal === false ? `<div class="absolute top-4 right-4 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
+          ${day.imageIsReal === false && !day.imageUrl?.endsWith('/placeholder.svg') ? `<div class="absolute top-4 right-4 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
         </div>
 
         <!-- Day header -->
@@ -611,8 +611,8 @@ function renderResult(data, origin) {
             class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-colors block group">
             <div class="relative h-40" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
               <img src="${r.imageUrl}" alt="${r.name}" class="w-full h-full object-cover" loading="lazy"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/food${Math.random()}/600/400'">
-              ${r.imageIsReal === false ? `<div class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
+                onerror="this.onerror=null;this.src='/img/placeholder.svg'">
+              ${r.imageIsReal === false && !r.imageUrl?.endsWith('/placeholder.svg') ? `<div class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
             </div>
             <div class="p-5">
               <span class="text-xs text-orange-400 font-semibold">${r.tag.toUpperCase()}</span>
@@ -859,12 +859,15 @@ const chatMessages = document.getElementById('chat-messages')
 
 const chatHistory = []
 
+const chatHint = document.getElementById('chat-hint')
+
 function toggleChat() {
   const opening = chatPanel.classList.contains('hidden')
   chatPanel.classList.toggle('hidden', !opening)
   chatPanel.classList.toggle('flex', opening)
   chatIconOpen.classList.toggle('hidden', opening)
   chatIconClose.classList.toggle('hidden', !opening)
+  if (chatHint) chatHint.style.display = opening ? 'none' : ''
   if (opening) setTimeout(() => chatInput.focus(), 100)
 }
 

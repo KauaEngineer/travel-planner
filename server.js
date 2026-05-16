@@ -16,6 +16,12 @@ if (!gemini) {
   console.log('✓ Gemini API configurada — roteiros serão gerados por IA')
 }
 
+if (!process.env.PEXELS_API_KEY) {
+  console.warn('⚠ PEXELS_API_KEY não encontrada — fallback de imagens cairá direto no placeholder')
+} else {
+  console.log('✓ Pexels API configurada — fallback de imagens habilitado')
+}
+
 const ROTEIRO_SCHEMA = {
   type: 'object',
   properties: {
@@ -276,13 +282,69 @@ function extractCorePlaceName(title) {
   return name
 }
 
-async function searchWikipediaImage(lang, query) {
+function normalize(str) {
+  return (str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
+// ─── Wikidata P18 ────────────────────────────────────────────────
+// Busca a entidade por nome, escolhe a que melhor casa com cidade/país,
+// e retorna a imagem oficial (propriedade P18) do Commons.
+async function findWikidataImage(placeName, city, country) {
   try {
-    const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=5&format=json`
+    const cityNorm = normalize(city)
+    const countryNorm = normalize(country)
+    const core = extractCorePlaceName(placeName)
+    const queries = Array.from(new Set([core, placeName].filter(Boolean)))
+
+    for (const query of queries) {
+      for (const lang of ['pt', 'en']) {
+        const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(query)}&language=${lang}&format=json&type=item&limit=7&origin=*`
+        const searchRes = await fetch(searchUrl, { headers: { 'User-Agent': 'TravelPlanner/1.0' } })
+        if (!searchRes.ok) continue
+        const data = await searchRes.json()
+        const hits = data.search || []
+        if (!hits.length) continue
+
+        const scored = hits.map(h => {
+          const desc = normalize(h.description)
+          const label = normalize(h.label)
+          let score = 0
+          if (cityNorm && desc.includes(cityNorm)) score += 10
+          if (countryNorm && desc.includes(countryNorm)) score += 5
+          if (label === normalize(query)) score += 2
+          return { id: h.id, score }
+        }).sort((a, b) => b.score - a.score)
+
+        for (const { id, score } of scored) {
+          if (score === 0) continue
+          const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${id}&property=P18&format=json&origin=*`
+          const entRes = await fetch(entityUrl, { headers: { 'User-Agent': 'TravelPlanner/1.0' } })
+          if (!entRes.ok) continue
+          const ent = await entRes.json()
+          const filename = ent.claims?.P18?.[0]?.mainsnak?.datavalue?.value
+          if (!filename) continue
+          return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=1200`
+        }
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+// ─── Wikipedia validada ──────────────────────────────────────────
+// Mesma opensearch de antes, mas só aceita o resultado se o resumo
+// menciona a cidade/país — corta lixo do tipo "Cristo Redentor" → "Alarm-Politie".
+async function searchWikipediaImage(lang, query, validators = []) {
+  try {
+    const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=5&format=json&origin=*`
     const searchRes = await fetch(searchUrl, { headers: { 'User-Agent': 'TravelPlanner/1.0' } })
     const searchData = await searchRes.json()
     const titles = searchData[1] || []
     if (!titles.length) return null
+
+    const validatorsNorm = validators.filter(Boolean).map(normalize)
 
     for (const title of titles) {
       try {
@@ -294,7 +356,14 @@ async function searchWikipediaImage(lang, query) {
         if (summary.type === 'disambiguation') continue
         const thumb = summary.thumbnail?.source
         if (!thumb) continue
-        return thumb.replace(/\/\d+px-/, '/800px-')
+
+        if (validatorsNorm.length) {
+          const haystack = normalize(`${summary.title} ${summary.description || ''} ${summary.extract || ''}`)
+          const matches = validatorsNorm.some(v => haystack.includes(v))
+          if (!matches) continue
+        }
+
+        return thumb.replace(/\/\d+px-/, '/1200px-')
       } catch { continue }
     }
     return null
@@ -303,51 +372,60 @@ async function searchWikipediaImage(lang, query) {
   }
 }
 
-async function findWikipediaImage(rawTitle, city) {
+async function findWikipediaImage(rawTitle, city, country) {
   const core = extractCorePlaceName(rawTitle)
-  const queries = [
-    core,
-    rawTitle,
-    `${core} ${city}`
-  ]
+  const queries = [core, rawTitle, city ? `${core} ${city}` : null].filter(Boolean)
+  const validators = [city, country].filter(Boolean)
   for (const lang of ['pt', 'en']) {
     for (const query of queries) {
-      const result = await searchWikipediaImage(lang, query)
+      const result = await searchWikipediaImage(lang, query, validators)
       if (result) return result
     }
   }
   return null
 }
 
-// Fallback final neutro e seguro (foto de mapa-mundi, Unsplash verificado)
-const GENERIC_TRAVEL_IMAGE = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80&auto=format&fit=crop'
+// ─── Pexels (fallback antes do placeholder) ──────────────────────
+async function searchPexelsImage(query) {
+  if (!process.env.PEXELS_API_KEY) return null
+  try {
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3&orientation=landscape`
+    const res = await fetch(url, { headers: { Authorization: process.env.PEXELS_API_KEY, 'User-Agent': 'TravelPlanner/1.0' } })
+    if (!res.ok) return null
+    const data = await res.json()
+    const photo = data.photos?.[0]
+    return photo?.src?.large || photo?.src?.original || null
+  } catch {
+    return null
+  }
+}
 
-async function findBestImage({ placeName, location, city, country }) {
-  // 1. Wikipedia do lugar específico
-  const placeImg = await findWikipediaImage(placeName, city)
-  if (placeImg) return { url: placeImg, isReal: true }
+// Placeholder ilustrativo (SVG estático, claramente não-foto)
+const PLACEHOLDER_IMAGE = '/img/placeholder.svg'
 
-  // 2. Wikipedia do bairro/região
-  if (location) {
-    const locImg = await searchWikipediaImage('pt', location) || await searchWikipediaImage('en', location)
-    if (locImg) return { url: locImg, isReal: false }
+async function findBestImage({ placeName, location, city, country, category }) {
+  // 1. Wikidata P18 — preciso pra pontos turísticos famosos
+  const wdImg = await findWikidataImage(placeName, city, country)
+  if (wdImg) return { url: wdImg, isReal: true }
+
+  // 2. Wikipedia validada (artigo precisa mencionar cidade/país)
+  const wpImg = await findWikipediaImage(placeName, city, country)
+  if (wpImg) return { url: wpImg, isReal: true }
+
+  // 3. Pexels — keyword semântica (lugar + cidade)
+  const corePlace = extractCorePlaceName(placeName)
+  const pexelsQueries = Array.from(new Set([
+    [corePlace, city].filter(Boolean).join(' '),
+    [category, city].filter(Boolean).join(' '),
+    city
+  ].filter(Boolean)))
+  for (const q of pexelsQueries) {
+    const px = await searchPexelsImage(q)
+    if (px) return { url: px, isReal: false }
   }
 
-  // 3. Wikipedia da cidade (com cidade + país para evitar disambiguação)
-  const cityQueries = country ? [`${city} ${country}`, city] : [city]
-  for (const q of cityQueries) {
-    const img = await searchWikipediaImage('pt', q) || await searchWikipediaImage('en', q)
-    if (img) return { url: img, isReal: false }
-  }
-
-  // 4. Wikipedia do país
-  if (country) {
-    const countryImg = await searchWikipediaImage('pt', country) || await searchWikipediaImage('en', country)
-    if (countryImg) return { url: countryImg, isReal: false }
-  }
-
-  // 5. Último recurso: imagem genérica de viagem
-  return { url: GENERIC_TRAVEL_IMAGE, isReal: false }
+  // 4. Placeholder claramente ilustrativo (último recurso)
+  return { url: PLACEHOLDER_IMAGE, isReal: false }
 }
 
 async function findRealPlace(city, searchTerm) {
