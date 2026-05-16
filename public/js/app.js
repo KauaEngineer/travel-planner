@@ -478,7 +478,7 @@ function renderResult(data, origin) {
             <a href="${l.bookingUrl || '#'}" target="_blank" rel="noopener noreferrer"
               class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-colors block group">
               <div class="relative h-40" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
-                <img src="${l.imageUrl}" alt="${l.name}" class="w-full h-full object-cover object-top" loading="lazy"
+                <img src="${l.imageUrl}" alt="${l.name}" class="w-full h-full object-cover ${l.imageIsReal ? 'object-top' : 'object-center'}" loading="lazy"
                   onerror="this.onerror=null;this.src='/img/placeholder.svg'">
                 ${l.imageIsReal === false && !l.imageUrl?.endsWith('/placeholder.svg') ? `<div class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
               </div>
@@ -530,7 +530,7 @@ function renderResult(data, origin) {
       <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
         <!-- Cover image -->
         <div class="relative h-56" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
-          <img src="${day.imageUrl}" alt="${day.theme || 'Dia ' + day.day}" class="w-full h-full object-cover object-top" loading="lazy"
+          <img src="${day.imageUrl}" alt="${day.theme || 'Dia ' + day.day}" class="w-full h-full object-cover ${day.imageIsReal ? 'object-top' : 'object-center'}" loading="lazy"
             onerror="this.onerror=null;this.src='/img/placeholder.svg'">
           <div class="absolute top-4 left-4 bg-slate-950/80 backdrop-blur text-orange-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">
             Dia ${day.day}
@@ -610,7 +610,7 @@ function renderResult(data, origin) {
           <a href="${r.mapsUrl || '#'}" target="_blank" rel="noopener noreferrer"
             class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-colors block group">
             <div class="relative h-40" style="background:linear-gradient(135deg,#1e293b,#0f172a)">
-              <img src="${r.imageUrl}" alt="${r.name}" class="w-full h-full object-cover object-top" loading="lazy"
+              <img src="${r.imageUrl}" alt="${r.name}" class="w-full h-full object-cover ${r.imageIsReal ? 'object-top' : 'object-center'}" loading="lazy"
                 onerror="this.onerror=null;this.src='/img/placeholder.svg'">
               ${r.imageIsReal === false && !r.imageUrl?.endsWith('/placeholder.svg') ? `<div class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur text-slate-400 text-[10px] px-2 py-1 rounded-full">Foto ilustrativa</div>` : ''}
             </div>
